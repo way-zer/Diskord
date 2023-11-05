@@ -24,7 +24,7 @@ import kotlin.math.ceil
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
-private const val DISCORD_API_URL = "https://discord.com/api/v10"
+var DISCORD_API_URL = "https://discord-p.tinylake.tk/api/v10"
 
 private val logger = KotlinLogging.logger {}
 
