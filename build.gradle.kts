@@ -1,12 +1,13 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     `maven-publish`
     signing
 
-    kotlin("multiplatform") version "1.9.0" apply false
-    kotlin("plugin.serialization") version "1.9.0" apply false
-    id("org.jetbrains.dokka") version "1.8.20"
+    alias(libs.plugins.kotlin.multiplatform) apply false
+    alias(libs.plugins.kotlin.plugin.serialization) apply false
+    alias(libs.plugins.dokka)
 }
 
 val diskordVersion: String by project
@@ -20,8 +21,8 @@ allprojects {
     }
 
     tasks.withType<KotlinCompile> {
-        kotlinOptions {
-            jvmTarget = "1.8"
+        compilerOptions {
+            jvmTarget = JvmTarget.JVM_1_8
         }
     }
 }

@@ -9,6 +9,8 @@ import com.jessecorbett.diskord.api.interaction.command.CommandOption
 import com.jessecorbett.diskord.api.interaction.command.CommandType
 import com.jessecorbett.diskord.bot.BotContext
 import io.github.oshai.kotlinlogging.KotlinLogging
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.contract
 
 @InteractionModule
 public class InteractionBuilder(
@@ -29,6 +31,7 @@ public class InteractionBuilder(
         description: String,
         guildId: String? = null,
         permissions: Permissions = Permissions.ALL,
+        integrationTypes: Set<CommandIntegrationType> = setOf(CommandIntegrationType.GUILD),
         build: CommandContext<ApplicationCommand>.() -> Unit
     ) {
         val context = CommandContext<ApplicationCommand>().apply(build)
@@ -38,7 +41,8 @@ public class InteractionBuilder(
             description = description,
             options = context.parameters.map(CommandOption::fromOption),
             defaultPermission = permissions,
-            type = CommandType.ChatInput
+            type = CommandType.ChatInput,
+            integrationTypes = integrationTypes
         )
 
         interactionCommand(createCommand, guildId) { responseContext ->
@@ -55,6 +59,7 @@ public class InteractionBuilder(
         description: String,
         guildId: String? = null,
         permissions: Permissions = Permissions.ALL,
+        integrationTypes: Set<CommandIntegrationType> = setOf(CommandIntegrationType.GUILD),
         builder: CommandGroupBuilder.() -> Unit
     ) {
         val groupTree = CommandGroupBuilder().apply(builder)
@@ -63,7 +68,8 @@ public class InteractionBuilder(
             description = description,
             options = groupTree.options.map(CommandOption::fromOption),
             defaultPermission = permissions,
-            type = CommandType.ChatInput
+            type = CommandType.ChatInput,
+            integrationTypes = integrationTypes
         )
 
         interactionCommand(createCommand, guildId) { responseContext ->
@@ -99,13 +105,15 @@ public class InteractionBuilder(
         name: String,
         guildId: String? = null,
         permissions: Permissions = Permissions.ALL,
+        integrationTypes: Set<CommandIntegrationType> = setOf(CommandIntegrationType.GUILD),
         callback: suspend ResponseContext<ApplicationCommand>.() -> Unit
     ) {
         val createCommand = CreateCommand(
             name = name,
             description = "",
             defaultPermission = permissions,
-            type = CommandType.User
+            type = CommandType.User,
+            integrationTypes = integrationTypes
         )
 
         interactionCommand(createCommand, guildId) { responseContext ->
@@ -121,13 +129,15 @@ public class InteractionBuilder(
         name: String,
         guildId: String? = null,
         permissions: Permissions = Permissions.ALL,
+        integrationTypes: Set<CommandIntegrationType> = setOf(CommandIntegrationType.GUILD),
         callback: suspend ResponseContext<ApplicationCommand>.() -> Unit
     ) {
         val createCommand = CreateCommand(
             name = name,
             description = "",
             defaultPermission = permissions,
-            type = CommandType.Message
+            type = CommandType.Message,
+            integrationTypes = integrationTypes
         )
 
         interactionCommand(createCommand, guildId) { responseContext ->
@@ -150,7 +160,7 @@ public class InteractionBuilder(
             val existing = existingCommands.filter { it.guildId == guildId }.firstOrNull { it.name == createCommand.name }
 
             // Check if the command already exists and needs updated
-            if (existing != null && createCommand.options?.toSet() == existing.options.toSet()) {
+            if (isCommandNotUpdated(existing, createCommand)) {
                 logger.debug { "Command with name ${existing.name} and guildId $guildId already exists in current form" }
                 command = existing
                 return@onInit
@@ -195,5 +205,22 @@ public class InteractionBuilder(
                 ResponseContext(botContext, interaction, emptyList(), null, addModalCallback).pending(interaction)
             }
         }
+    }
+
+    @OptIn(ExperimentalContracts::class)
+    private fun isCommandNotUpdated(existingCommand: Command?, updatedCommand: CreateCommand): Boolean {
+        contract {
+            returns() implies (existingCommand != null)
+        }
+
+        logger.trace { "Comparing: existingCommand -> $existingCommand // updatedCommand -> $updatedCommand" }
+
+        return existingCommand != null
+            && updatedCommand.description == existingCommand.description
+            && updatedCommand.localizedDescriptions?.ifEmpty { null } == existingCommand.localizedDescriptions?.ifEmpty { null }
+            && updatedCommand.options?.toSet() == existingCommand.options.toSet()
+            && updatedCommand.defaultPermission == existingCommand.defaultMemberPermissions
+            && updatedCommand.allowedInDms == existingCommand.availableInDMs
+            && updatedCommand.nsfw == existingCommand.nsfw
     }
 }

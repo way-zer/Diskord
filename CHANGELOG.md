@@ -1,5 +1,49 @@
 # Changelog
 
+## [5.5.0] - 2024-07-31
+
+### Added
+- Support for application command context types
+
+### Changed
+- Upgraded Kotlin to 2.0.0
+- Upgraded to kotlinx.serialization 1.7.0
+
+## [5.4.1] - 2024-07-14
+
+### Fixed
+- Interaction commands defined by the commands DSL should now accept changes for more fields.
+
+### Changed
+- Updated Gradle to 8.7 and changed dependency management to leverage Gradle version catalogs
+- Updated Kotlin to 1.9.23 / Dokka to 1.9.20
+- Updated Ktor to 2.3.11
+- Updated kotlinx.coroutines to 1.8.1
+- Updated kotlinx.datetime to 0.6.0
+- Updated SLF4J to 2.0.13
+
+## [5.4.0] - 2024-04-21
+
+### Added
+- User display name
+- User banner image hash
+- User accent colors
+- User avatar decoration
+
+## [5.3.0] - 2023-12-13
+
+### Added
+- Support for configuring the HttpClient used
+
+### Changed
+- Upgraded to Kotlin 1.9.21
+- Upgraded to kotlinx.datetime 0.5.0
+- Upgraded to Ktor 2.3.7
+- Upgraded to kotlinx.serialization 1.6.2
+
+### Fixed
+- Fix issue where MessageComponent.Data.values is not always present
+
 ## [5.2.0] - 2023-08-26
 
 ### Added
